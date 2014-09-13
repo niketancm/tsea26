@@ -8,6 +8,11 @@
 	
 	set   r0,0		; Loop counter
 	set   r1,43		; Loop end
+        
+        repeat label1,43
+	out   0x11,r0		; Output data
+        add r0,1                ;add the data
+label1
 
 ;; loop
 ;; 	out   0x11,r0		; Output data
