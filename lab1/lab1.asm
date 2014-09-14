@@ -137,7 +137,12 @@ fir_kernel
 	ld0 r1,(current_location)
 	nop
 	move ar1,r1
-
+	
+	st1 top1,r1
+	st1 bot1,r1+31
+	repeat here,31
+	convss acr0,(ar1++%),(ar0++%)
+here
 	;;  Hint: Remember to set ar0, step0, step1, bot1, and top1
 	;;  appropriately before starting the convolution.
 
@@ -161,7 +166,8 @@ fir_kernel
 
 	;; Hint: You may need some scaling in this instruction. Without scaling
 	;; this will move bit 31-16 into r0 (after saturation and rounding)
-	move r0,sat rnd acr0
+        
+	move r0,sat rnd div2 acr0
 	nop
 
 	out 0x11,r0		; Output a sample
@@ -196,38 +202,38 @@ coefficients
 ;;;  Hint: You might find it easy to use fprintf() in matlab to
 ;;;  create this part. (fprintf in matlab can handle vectors)
 
-	.dw 32767		;
-	.dw 0x7fff		; Enter hexadecimal number like this
-	.dw 0
-	.dw 0
-	.dw 0
-	.dw 0
-	.dw 0
-	.dw 0
-	.dw 0
-	.dw 0
-	.dw 0
-	.dw 0
-	.dw 0
-	.dw 0
-	.dw 0
-	.dw 0
-	.dw 0
-	.dw 0
-	.dw 0
-	.dw 0
-	.dw 0
-	.dw 0
-	.dw 0
-	.dw 0
-	.dw 0
-	.dw 0
-	.dw 0
-	.dw 0
-	.dw 0
-	.dw 0
-	.dw 0
-	.dw 0
+	.dw 0x0074 		;
+	.dw 0x00fc		; Enter hexadecimal number like this
+	.dw 0x01f7
+	.dw 0x03b2
+	.dw 0x0674
+	.dw 0x0a6e
+	.dw 0x0fb6
+	.dw 0x163f
+	.dw 0x1dd7
+	.dw 0x2628
+	.dw 0x2ebf
+	.dw 0x3717
+	.dw 0x3ea0
+	.dw 0x44d4
+	.dw 0x493d
+	.dw 0x4b88
+	.dw 0x4b88
+	.dw 0x493d
+	.dw 0x44d4
+	.dw 0x3ea0
+	.dw 0x3717
+	.dw 0x2ebf
+	.dw 0x2628
+	.dw 0x1dd7
+	.dw 0x163f
+	.dw 0x0fb6
+	.dw 0x0a6e
+	.dw 0x0674
+	.dw 0x03b2
+	.dw 0x01f7
+	.dw 0x00fc
+	.dw 0x0074
 	
 ;;; ----------------------------------------------------------------------
 ;;; Stack space

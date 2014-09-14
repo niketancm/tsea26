@@ -8,6 +8,7 @@ t = (0:N-1)/Fs; % time axis
 % Create a low pass filter with a cut-off frequency of 15 Hz
 
 order=31;
+FIXME = 0.06;
 h = fir1(order, FIXME );  % FIXME - Insert the correct value here!
 
 % Matlab based filtering
