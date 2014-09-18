@@ -7,7 +7,7 @@
 ;;; ----------------------------------------------------------------------
 ;;; Main loop. This loop ensures that handle_sample is called 1000 times.
 ;;; ----------------------------------------------------------------------
-	set r31,1000
+	set r31,100
 loop
 	call handle_sample
 
@@ -28,95 +28,94 @@ loop
 ;;; filtering.
 ;;; ----------------------------------------------------------------------
 handle_sample
-	push r0
-	push r1
+	;; push r0
+	;; push r1
 
-	move r0,ar0
-	move r1,ar1
-	push r0
-	push r1
+	;; move r0,ar0
+	;; move r1,ar1
+	;; push r0
+	;; push r1
 
-	move r0,step0
-	move r1,step1
-	push r0
-	push r1
+	;; move r0,step0
+	;; move r1,step1
+	;; push r0
+	;; push r1
 
-	move r0,bot1
-	move r1,top1
-	push r0
-	push r1
+	;; move r0,bot1
+	;; move r1,top1
+	;; push r0
+	;; push r1
 
-	move r0,acr0
-	move r1,mul65536 acr0
-	push r0
-	push r1
+	;; move r0,acr0
+	;; move r1,mul65536 acr0
+	;; push r0
+	;; push r1
 
-	move r0,guards01
-	move r1,loopn
-	push r0
-	push r1
+	;; move r0,guards01
+	;; move r1,loopn
+	;; push r0
+	;; push r1
 
-	move r0,loopb
-	move r1,loope
-	push r0
-	push r1
+	;; move r0,loopb
+	;; move r1,loope
+	;; push r0
+	;; push r1
 
-	move r0,r10
-	push r0
+	;; move r0,r10
+	;; push r0
 	
-	move r0,bot0 		;Set the top and bottom for filter
-	move r1,top0		;coeffieciebnta
-	push r0
-	push r1
-
+	;; move r0,bot0 		;Set the top and bottom for filter
+	;; move r1,top0		;coeffieciebnta
+	;; push r0
+	;; push r1
         
         ;;;  FIXME - You may want to save other registers here as well.
         ;;; (Alternatively, you might want to save less registers here in order
         ;;; to improve the performance if you can get away with it somehow...)
-	
+        repeat task6,10	
 	call fir_kernel
-
-	pop r1			;changed
-	pop r0
-	move top0,r1
-	move bot0,r0
+task6
+	;; pop r1			;changed
+	;; pop r0
+	;; move top0,r1
+	;; move bot0,r0
 	
-	pop r0
-        nop
-	move r10,r0
+	;; pop r0
+        ;; nop
+	;; move r10,r0
 	
-	pop r1
-	pop r0
-	move loope,r1
-	move loopb,r0
+	;; pop r1
+	;; pop r0
+	;; move loope,r1
+	;; move loopb,r0
 
-	pop r1
-	pop r0
-	move loopn,r1
-	move guards01,r0
+	;; pop r1
+	;; pop r0
+	;; move loopn,r1
+	;; move guards01,r0
 
-	pop r1
-	pop r0
-	move acr0.l,r1
-	move acr0.h,r0
+	;; pop r1
+	;; pop r0
+	;; move acr0.l,r1
+	;; move acr0.h,r0
 	
-	pop r1
-	pop r0
-	move top1,r1
-	move bot1,r0
+	;; pop r1
+	;; pop r0
+	;; move top1,r1
+	;; move bot1,r0
 
-	pop r1
-	pop r0
-	move step1,r1
-	move step0,r0
+	;; pop r1
+	;; pop r0
+	;; move step1,r1
+	;; move step0,r0
 	
-	pop r1
-	pop r0
-	move ar1,r1
-	move ar0,r0
+	;; pop r1
+	;; pop r0
+	;; move ar1,r1
+	;; move ar0,r0
 
-	pop r1
-	pop r0
+	;; pop r1
+	;; pop r0
 	ret
 
 
@@ -165,6 +164,7 @@ fir_kernel
         move top1,r0 	                 ;set the top1
 
         ;;; FIXME - You need to implement the rest of this function
+        repeat task6,10
 	in r0,0x10		; Read input sample -> r0
 
 	set r10,0
@@ -211,6 +211,7 @@ this
 
 	clr acr0
 	out 0x11,r0		; Output a sample
+task6        
 	ret
 	
 
