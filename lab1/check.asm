@@ -1,57 +1,288 @@
+	.code
+	set sp,stackarea		; We obviously need some space for the stack...
+	nop
+	call initfirkernel
+	call initsanitycheck		; Set up random values in almost all registers
+
 ;;; ----------------------------------------------------------------------
-;;; Example program that outputs the value 0 to 42 on port 0x11
-;;; When run on the simulator this port is connected to the file IOS0011
+;;; Main loop. This loop ensures that handle_sample is called 1000 times.
 ;;; ----------------------------------------------------------------------
+	set r31,64
+loop
+	call handle_sample
+
+	add r31,-1
+	jump.ne loop		
+
+	call sanitycheck  ; Ensure no register was clobbered
+	out 0x13,r0       ; Signals that we are at the end of the loop
+
+
+;;; ----------------------------------------------------------------------
+;;; We assume that the handle_sample signal is called with a frequency
+;;; of 500 Hz from a timer interrupt. It can thus not assume anything
+;;; about the contents of the registers and must also save all registers
+;;; that are modified.
+;;; 
+;;; Once all registers are saved it calls fir_kernel to perform the actual
+;;; filtering.
+;;; ----------------------------------------------------------------------
+handle_sample
+	push r0
+	push r1
+
+	move r0,ar0
+	move r1,ar1
+	push r0
+	push r1
+
+	move r0,step0
+	move r1,step1
+	push r0
+	push r1
+
+	move r0,bot1
+	move r1,top1
+	push r0
+	push r1
+
+	move r0,acr0
+	move r1,mul65536 acr0
+	push r0
+	push r1
+
+	move r0,guards01
+	move r1,loopn
+	push r0
+	push r1
+
+	move r0,loopb
+	move r1,loope
+	push r0
+	push r1
+
+	move r0,r10
+	push r0
 	
-	
-	set   sp,stackarea	; Set the stackpointer
-	
-	set   r0,0		; Loop counter
-	set   r1,43		; Loop end
+	move r0,bot0 		;Set the top and bottom for filter
+	move r1,top0		;coeffieciebnta
+	push r0
+	push r1
+
         
-        repeat label1,43
-	out   0x11,r0		; Output data
-        add r0,1                ;add the data
-label1
-
-
-
-;; set up the ringbuffer
-
-
-        
-;; loop
-;; 	out   0x11,r0		; Output data
-;; 	add   r0,1
-;; 	cmp   r1,r0		; And check if we have reached the end of the loop
-;; 	jump.ne loop
- 
-;;;     The following commented code is an example of a faster way of running the same loop
+        ;;;  FIXME - You may want to save other registers here as well.
+        ;;; (Alternatively, you might want to save less registers here in order
+        ;;; to improve the performance if you can get away with it somehow...)
 	
-;;; 	set   r0,0
-;;;     set   r1,42
-;;; 	cmp   1,r0		; Force Z to 0
-;;; loop2
-;;; 	jump.ne ds3 loop2	; Other variant of loop, this one is faster as
-;;; 	out   0x11,r0 		; it uses the delay slots efficiently
-;;; 	add   r0,1
-;;; 	cmp   r1,r0
+	call fir_kernel
 
-;;;     FIXME - Replace the loop with a repeat based loop which counts
-;;;     from 0 to 42.
-;;;
-;;;     Hint: the syntax for repeat is as follows:
-;;;         repeat label_after_loop,number_of_iterations
-;;;     (Unfortunately no warning message will be given if you mix up the
-;;;     parameters to repeat.)
+	pop r1			;changed
+	pop r0
+	move top0,r1
+	move bot0,r0
+	
+	pop r0
+        nop
+	move r10,r0
+	
+	pop r1
+	pop r0
+	move loope,r1
+	move loopb,r0
 
-	out   0x13,r0		; Exit the simulator.
+	pop r1
+	pop r0
+	move loopn,r1
+	move guards01,r0
+
+	pop r1
+	pop r0
+	move acr0.l,r1
+	move acr0.h,r0
+	
+	pop r1
+	pop r0
+	move top1,r1
+	move bot1,r0
+
+	pop r1
+	pop r0
+	move step1,r1
+	move step0,r0
+	
+	pop r1
+	pop r0
+	move ar1,r1
+	move ar0,r0
+
+	pop r1
+	pop r0
+	ret
 
 
 ;;; ----------------------------------------------------------------------
-;;; Some space for the stack
+;;; Allocate variables used by the fir_kernel here
 ;;; ----------------------------------------------------------------------
 	
+	.ram0
+current_location
+	.skip 1
+
+;;; ----------------------------------------------------------------------
+;;; Initialization function for the fir kernel. Right now it only sets
+;;; the current_location variable but you may want to do something more
+;;; here in the lab.
+;;; ----------------------------------------------------------------------
+	.code
+initfirkernel
+
+	set r1,ringbuffer
+	set r2,1
+	
+;;; This is the routine to intialize the ringbuffer to known values
+;;; from 1 to 32, using repeat loop
+	repeat zeros,32
+	st1 (r1),r2
+	add r1,r1,1
+	add r2,r2,1
+zeros
+	
+	set r1,ringbuffer 	
+	nop
+	st0 (current_location),r1 ;Store the address of the ringbuffer in ram0
+	ret
+
+;; -----------------------------------------------------------------
+;; This for reading the coeffcients and wrting it to the file
+;; -----------------------------------------------------------------
+	;; set r1,coefficients
+	;; nop
+	;; st0 (current_location),r1
+	;; ret
+
+;;; ----------------------------------------------------------------------
+;;; This is the filter kernel. It assumes that the following registers
+;;; can be changed: r0, r1, ar0, ar1, step0, step1, bot1, top1, acr0,
+;;; loopn/b/e. If you need to modify other registers, change
+;;; handle_sample above!
+;;; ----------------------------------------------------------------------
+	.code
+fir_kernel
+
+;; --------------------------------------------------------------------
+;; Reading from the circular buffer
+;; Set-up the top and bot for the circular buffer
+;; --------------------------------------------------------------------
+	set bot1,ringbuffer               ;and the bottom1 registers for circular address
+        nop
+        move r10,bot1
+        nop
+	add r0,r10,31
+	set step1,1
+        move top1,r0 	                 ;set the top1
+	
+;; ----------------------------------------------------------------
+;; Read from circular buffer and store the address of the 
+;; current postion in the buffer to the location "current_location"
+;; which is stored in DM0(RAM0) using st0
+;; ----------------------------------------------------------------
+	set r1,0
+	set r10,0
+	ld0 r10,(current_location) ;load the address of the last buffer location from RAM0
+	nop
+	move ar1,r10
+	nop
+
+	ld1 r1,(ar1++%) 	;This the circular addressing mode
+	nop
+	out 0x11,r1
+	move r10,ar1		;move the address to r10 to stored later
+	nop
+	st0 (current_location),r10 ;store the address to "current_location" in ram0
+	ret
+
+;; -----------------------------------------------------------------
+;; This is the reading the coeffcients and wrting it to the file
+;; -----------------------------------------------------------------
+
+	;; ld0 r10,(current_location) ;Save the address of the coefficients
+	;; nop
+	;; ld0 r0,(r10)
+	;; nop
+	;; out 0x11,r0
+	;; add r10,r10,1
+	;; st0 (current_location),r10
+	;; ret
+	
+
+;;; ----------------------------------------------------------------------
+;;; Allocate space for ringbuffer. We put this in DM1 since the
+;;; filter coefficients are stored in DM0 (as we only have a rom in DM0)
+;;; ----------------------------------------------------------------------
+	.ram1
+ringbuffer
+	.skip 31
+top_ringbuffer			; Convenient label
+	.skip 1
+	
+
+;;; ----------------------------------------------------------------------
+;;; The filter coefficients should be stored here in read only memory
+;;; ----------------------------------------------------------------------
+	.rom0
+coefficients
+;;;  FIXME: Here you need to fill in the coefficients.
+;;;  Note: For your final solution you need to use .dw here to
+;;;  demonstrate that you understand fixed point twos complement
+;;;  arithmetic. No negative numbers may be entered here! (Hexadecimal
+;;;  numbers are ok though.)
+;;; 
+;;;  Hint: During development you might find it easier to use .df and
+;;;  .scale instead though
+;;; 
+;;;  Hint: You might find it easy to use fprintf() in matlab to
+;;;  create this part. (fprintf in matlab can handle vectors)
+
+	.dw 0x0074 		;
+	.dw 0x00fc		; Enter hexadecimal number like this
+	.dw 0x01f7
+	.dw 0x03b2
+	.dw 0x0674
+	.dw 0x0a6e
+	.dw 0x0fb6
+	.dw 0x163f
+	.dw 0x1dd7
+	.dw 0x2628
+	.dw 0x2ebf
+	.dw 0x3717
+	.dw 0x3ea0
+	.dw 0x44d4
+	.dw 0x493d
+	.dw 0x4b88
+	.dw 0x4b88
+	.dw 0x493d
+	.dw 0x44d4
+	.dw 0x3ea0
+	.dw 0x3717
+	.dw 0x2ebf
+	.dw 0x2628
+	.dw 0x1dd7
+	.dw 0x163f
+	.dw 0x0fb6
+	.dw 0x0a6e
+	.dw 0x0674
+	.dw 0x03b2
+	.dw 0x01f7
+	.dw 0x00fc
+	.dw 0x0074
+	
+;;; ----------------------------------------------------------------------
+;;; Stack space
+;;; ----------------------------------------------------------------------
 	.ram1
 stackarea
-	.skip 100
+	.skip 300		; Should be plenty enough for a stack in this lab!
+
+	
+#include "sanitycheck.asm"
+
