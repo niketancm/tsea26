@@ -155,6 +155,7 @@ zeros
 ;; -----------------------------------------------------------------
 ;; This for reading the coeffcients and wrting it to the file
 ;; -----------------------------------------------------------------
+
 	;; set r1,coefficients
 	;; nop
 	;; st0 (current_location),r1
@@ -173,6 +174,7 @@ fir_kernel
 ;; Reading from the circular buffer
 ;; Set-up the top and bot for the circular buffer
 ;; --------------------------------------------------------------------
+
 	set bot1,ringbuffer               ;and the bottom1 registers for circular address
         nop
         move r10,bot1
@@ -181,11 +183,11 @@ fir_kernel
 	set step1,1
         move top1,r0 	                 ;set the top1
 	
-;; ----------------------------------------------------------------
-;; Read from circular buffer and store the address of the 
-;; current postion in the buffer to the location "current_location"
-;; which is stored in DM0(RAM0) using st0
-;; ----------------------------------------------------------------
+;; ;; ----------------------------------------------------------------
+;; ;; Read from circular buffer and store the address of the 
+;; ;; current postion in the buffer to the location "current_location"
+;; ;; which is stored in DM0(RAM0) using st0
+;; ;; ----------------------------------------------------------------
 	set r1,0
 	set r10,0
 	ld0 r10,(current_location) ;load the address of the last buffer location from RAM0
@@ -202,15 +204,26 @@ fir_kernel
 	ret
 
 ;; -----------------------------------------------------------------
-;; This is the reading the coeffcients and wrting it to the file
+;; This is the reading the coeffcients and wrting it to the file.
 ;; -----------------------------------------------------------------
+
+	;; set bot0,coefficients               ;and the bottom0 register for coefficients.
+        ;; nop
+        ;; move r10,bot0
+        ;; nop
+	;; add r0,r10,31
+	;; set step0,1
+        ;; move top0,r0 	                 ;set the top1
 
 	;; ld0 r10,(current_location) ;Save the address of the coefficients
 	;; nop
-	;; ld0 r0,(r10)
+	;; move ar0,r10
+	;; nop
+	;; ld0 r0,(ar0++%)
 	;; nop
 	;; out 0x11,r0
-	;; add r10,r10,1
+	;; move r10,ar0
+	;; nop
 	;; st0 (current_location),r10
 	;; ret
 	
