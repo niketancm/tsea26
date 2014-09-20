@@ -7,7 +7,7 @@
 ;;; ----------------------------------------------------------------------
 ;;; Main loop. This loop ensures that handle_sample is called 1000 times.
 ;;; ----------------------------------------------------------------------
-	set r31,1000
+	set r31,64
 loop
 	call handle_sample
 
@@ -137,12 +137,14 @@ current_location
 initfirkernel
 
 	set r1,ringbuffer
-	set r2,0
+	set r2,1
 	
-;;; This is the routine to intialize the ringbuffer to zeros
-
+;;; This is the routine to intialize the ringbuffer to known values
+;;; from 1 to 32, using repeat loop
 	repeat zeros,32
 	st1 (r1),r2
+	add r1,r1,1
+	add r2,r2,1
 zeros
 	
 	set r1,ringbuffer 	
@@ -169,10 +171,11 @@ zeros
 fir_kernel
 
 ;; --------------------------------------------------------------------
-;; Set-up the top and bot for both the co-efficients and ringbuffer
+;; Reading from the circular buffer
+;; Set-up the top and bot for the circular buffer
 ;; --------------------------------------------------------------------
 
-	set bot1,ringbuffer               ;and the bottom1 registers for ring buffer
+	set bot1,ringbuffer               ;and the bottom1 registers for circular address
         nop
         move r10,bot1
         nop
@@ -180,42 +183,24 @@ fir_kernel
 	set step1,1
         move top1,r0 	                 ;set the top1
 	
-	set bot0,coefficients               ;and the bottom0 register for coefficients.
-        nop
-        move r1,bot0
-        nop
-	add r0,r1,31
-	set step0,1
-        move top0,r0 	                 ;set the top0
-
 ;; ;; ----------------------------------------------------------------
 ;; ;; Read from circular buffer and store the address of the 
 ;; ;; current postion in the buffer to the location "current_location"
 ;; ;; which is stored in DM0(RAM0) using st0
 ;; ;; ----------------------------------------------------------------
-
-
+	set r1,0
+	set r10,0
 	ld0 r10,(current_location) ;load the address of the last buffer location from RAM0
-	move ar0,r1		   ;r1 has the first address of co-efficients
-	move ar1,r10 		   ;The ar1 contains the address of the ring buffer
 	nop
-	in r0,0x10		   ;Read input sample -> r0
+	move ar1,r10
 	nop
-	st1 (r10),r0	      	   ;Store the data, into the buffer
-	clr acr0		   ;The accumalator might have junk values, hence clear it
-	repeat convo,31
-        convss acr0,(ar0++%),(ar1++%)
-convo
-	move r10,ar1		   ;move the address to r10 to stored later
+
+	ld1 r1,(ar1++%) 	;This the circular addressing mode
 	nop
-	convss acr0,(ar0++%),(ar1++%)
-	nop
-	nop
-	move r0,sat rnd acr0
+	out 0x11,r1
+	move r10,ar1		;move the address to r10 to stored later
 	nop
 	st0 (current_location),r10 ;store the address to "current_location" in ram0
-	clr acr0
-	out 0x11,r0
 	ret
 
 ;; -----------------------------------------------------------------
