@@ -7,7 +7,7 @@
 ;;; ----------------------------------------------------------------------
 ;;; Main loop. This loop ensures that handle_sample is called 1000 times.
 ;;; ----------------------------------------------------------------------
-	set r31,1000
+	set r31,100
 loop
 	call handle_sample
 
@@ -28,95 +28,94 @@ loop
 ;;; filtering.
 ;;; ----------------------------------------------------------------------
 handle_sample
-	push r0
-	push r1
+	;; push r0
+	;; push r1
 
-	move r0,ar0
-	move r1,ar1
-	push r0
-	push r1
+	;; move r0,ar0
+	;; move r1,ar1
+	;; push r0
+	;; push r1
 
-	move r0,step0
-	move r1,step1
-	push r0
-	push r1
+	;; move r0,step0
+	;; move r1,step1
+	;; push r0
+	;; push r1
 
-	move r0,bot1
-	move r1,top1
-	push r0
-	push r1
+	;; move r0,bot1
+	;; move r1,top1
+	;; push r0
+	;; push r1
 
-	move r0,acr0
-	move r1,mul65536 acr0
-	push r0
-	push r1
+	;; move r0,acr0
+	;; move r1,mul65536 acr0
+	;; push r0
+	;; push r1
 
-	move r0,guards01
-	move r1,loopn
-	push r0
-	push r1
+	;; move r0,guards01
+	;; move r1,loopn
+	;; push r0
+	;; push r1
 
-	move r0,loopb
-	move r1,loope
-	push r0
-	push r1
+	;; move r0,loopb
+	;; move r1,loope
+	;; push r0
+	;; push r1
 
-	move r0,r10
-	push r0
+	;; move r0,r10
+	;; push r0
 	
-	move r0,bot0 		;Set the top and bottom for filter
-	move r1,top0		;coeffieciebnta
-	push r0
-	push r1
-
+	;; move r0,bot0 		;Set the top and bottom for filter
+	;; move r1,top0		;coeffieciebnta
+	;; push r0
+	;; push r1
         
         ;;;  FIXME - You may want to save other registers here as well.
         ;;; (Alternatively, you might want to save less registers here in order
         ;;; to improve the performance if you can get away with it somehow...)
-	
+        repeat task6,10	
 	call fir_kernel
-
-	pop r1			;changed
-	pop r0
-	move top0,r1
-	move bot0,r0
+task6
+	;; pop r1			;changed
+	;; pop r0
+	;; move top0,r1
+	;; move bot0,r0
 	
-	pop r0
-        nop
-	move r10,r0
+	;; pop r0
+        ;; nop
+	;; move r10,r0
 	
-	pop r1
-	pop r0
-	move loope,r1
-	move loopb,r0
+	;; pop r1
+	;; pop r0
+	;; move loope,r1
+	;; move loopb,r0
 
-	pop r1
-	pop r0
-	move loopn,r1
-	move guards01,r0
+	;; pop r1
+	;; pop r0
+	;; move loopn,r1
+	;; move guards01,r0
 
-	pop r1
-	pop r0
-	move acr0.l,r1
-	move acr0.h,r0
+	;; pop r1
+	;; pop r0
+	;; move acr0.l,r1
+	;; move acr0.h,r0
 	
-	pop r1
-	pop r0
-	move top1,r1
-	move bot1,r0
+	;; pop r1
+	;; pop r0
+	;; move top1,r1
+	;; move bot1,r0
 
-	pop r1
-	pop r0
-	move step1,r1
-	move step0,r0
+	;; pop r1
+	;; pop r0
+	;; move step1,r1
+	;; move step0,r0
 	
-	pop r1
-	pop r0
-	move ar1,r1
-	move ar0,r0
+	;; pop r1
+	;; pop r0
+	;; move ar1,r1
+	;; move ar0,r0
 
-	pop r1
-	pop r0
+	;; pop r1
+	;; pop r0
 	ret
 
 
@@ -135,29 +134,10 @@ current_location
 ;;; ----------------------------------------------------------------------
 	.code
 initfirkernel
-
 	set r1,ringbuffer
-	set r2,0
-	
-;;; This is the routine to intialize the ringbuffer to zeros
-
-	repeat zeros,32
-	st1 (r1),r2
-zeros
-	
-	set r1,ringbuffer 	
 	nop
-	st0 (current_location),r1 ;Store the address of the ringbuffer in ram0
+	st0 (current_location),r1
 	ret
-
-;; -----------------------------------------------------------------
-;; This for reading the coeffcients and wrting it to the file
-;; -----------------------------------------------------------------
-
-	;; set r1,coefficients
-	;; nop
-	;; st0 (current_location),r1
-	;; ret
 
 ;;; ----------------------------------------------------------------------
 ;;; This is the filter kernel. It assumes that the following registers
@@ -168,79 +148,71 @@ zeros
 	.code
 fir_kernel
 
-;; --------------------------------------------------------------------
-;; Set-up the top and bot for both the co-efficients and ringbuffer
-;; --------------------------------------------------------------------
+	
+        set bot0,coefficients	     	  ;Store the address of the coeffcients to r2
+        nop
+	move r10,bot0
+        nop
+	add r0,r10,32
+	move top0,r0
 
-	set bot1,ringbuffer               ;and the bottom1 registers for ring buffer
+	set bot1,ringbuffer               ;and the bottom1 registers for circular address
         nop
         move r10,bot1
         nop
-	add r0,r10,31
-	set step1,1
+	add r0,r10,32
         move top1,r0 	                 ;set the top1
-	
-	set bot0,coefficients               ;and the bottom0 register for coefficients.
-        nop
-        move r1,bot0
-        nop
-	add r0,r1,31
-	set step0,1
-        move top0,r0 	                 ;set the top0
 
-;; ;; ----------------------------------------------------------------
-;; ;; Read from circular buffer and store the address of the 
-;; ;; current postion in the buffer to the location "current_location"
-;; ;; which is stored in DM0(RAM0) using st0
-;; ;; ----------------------------------------------------------------
+        ;;; FIXME - You need to implement the rest of this function
+        repeat task6,10
+	in r0,0x10		; Read input sample -> r0
 
-
-	ld0 r10,(current_location) ;load the address of the last buffer location from RAM0
-	move ar0,r1		   ;r1 has the first address of co-efficients
-	move ar1,r10 		   ;The ar1 contains the address of the ring buffer
+	set r10,0
+	ld0 r1,(current_location)
 	nop
-	in r0,0x10		   ;Read input sample -> r0
-	nop
-	st1 (r10),r0	      	   ;Store the data, into the buffer
-	clr acr0		   ;The accumalator might have junk values, hence clear it
-	repeat convo,31
+        move ar0,r2             ;Set the ar0 to point to the filter coefficients
+	move ar1,r1             ;Set the ar1 to ring buffer
+        nop
+        st0 (ar1),r0            ;store the data in r0 to the ring buffer
+        
+
+        repeat this,31
+        convss acr0,(ar0++%),(ar1++%) ;32 tap convolution
+this
+        move r10,ar1
         convss acr0,(ar0++%),(ar1++%)
-convo
-	move r10,ar1		   ;move the address to r10 to stored later
-	nop
-	convss acr0,(ar0++%),(ar1++%)
-	nop
-	nop
+        move ar1,r10
+        nop
+	;;  Hint: Remember to set ar0, step0, step1, bot1, and top1
+	;;  appropriately before starting the convolution.
+
+	;; Hint: The syntax of the repeat instruction is:
+	;;     repeat label_at_end_of_loop, number_of_iteration
+
+	;; Hint: For the final iteration you do not want to increment
+	;; the address register that points to the ring buffer. (As
+	;; you want to note the value of the address register at this point
+	;; and save it to current_location.) However, the convss
+	;; instruction forces you to either use a post increment addressing 
+	;; mode or modulo addressing mode.
+	;; 
+	;; You can achieve the same effect by instead copying the value
+	;; just before running the final convss instruction like this:
+	;; 
+	;;     move r5,ar1
+	;;     convss ...  (ar1++%)
+	;;     Store r5 here
+	
+
+	;; Hint: You may need some scaling in this instruction. Without scaling
+	;; this will move bit 31-16 into r0 (after saturation and rounding)
 	move r0,sat rnd acr0
 	nop
-	st0 (current_location),r10 ;store the address to "current_location" in ram0
+
 	clr acr0
-	out 0x11,r0
+	out 0x11,r0		; Output a sample
+task6        
 	ret
-
-;; -----------------------------------------------------------------
-;; This is the reading the coeffcients and wrting it to the file.
-;; -----------------------------------------------------------------
-
-	;; set bot0,coefficients               ;and the bottom0 register for coefficients.
-        ;; nop
-        ;; move r10,bot0
-        ;; nop
-	;; add r0,r10,31
-	;; set step0,1
-        ;; move top0,r0 	                 ;set the top1
-
-	;; ld0 r10,(current_location) ;Save the address of the coefficients
-	;; nop
-	;; move ar0,r10
-	;; nop
-	;; ld0 r0,(ar0++%)
-	;; nop
-	;; out 0x11,r0
-	;; move r10,ar0
-	;; nop
-	;; st0 (current_location),r10
-	;; ret
 	
 
 ;;; ----------------------------------------------------------------------
