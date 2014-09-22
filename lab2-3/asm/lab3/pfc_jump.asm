@@ -1,0 +1,61 @@
+	.code
+	jump start
+apa
+	set r2,0x2222
+	set r3,0x3333
+	nop
+	nop
+	out 0x11,r2
+	out 0x11,r3
+	out 0x12,r0
+start	
+	set r0,1
+	set r2,0xaaaa
+	set r3,0xffff
+	nop
+	nop
+	nop
+	jump tohere0
+	out 0x11,r3
+	out 0x11,r3
+	out 0x11,r3
+	out 0x11,r3
+tohere0
+	out 0x11,r2
+	jump ds1 tohere1
+	out 0x11,r2
+	out 0x11,r3
+	out 0x11,r3
+	out 0x11,r3
+	out 0x11,r3
+tohere1
+	out 0x11,r2 
+	jump ds2 tohere2
+	out 0x11,r2
+	out 0x11,r2
+	out 0x11,r3
+	out 0x11,r3
+	out 0x11,r3
+	out 0x11,r3
+	out 0x11,r3
+tohere2
+	out 0x11,r2 
+	jump ds3 end
+	out 0x11,r2
+	out 0x11,r2
+	out 0x11,r2
+	out 0x11,r3
+	out 0x11,r3
+	out 0x11,r3
+	out 0x11,r3
+	out 0x11,r3
+end			
+	jump r0
+	out 0x12,r0
+	.ram0
+foo
+	.skip	5
+
+	.rom0
+bar
+	.dw	0x500
