@@ -65,7 +65,7 @@ handle_sample
 	push r0
 	
 	move r0,bot0 		;Set the top and bottom for filter
-	move r1,top0		;coeffieciebnta
+	move r1,top0		;coefficients
 	push r0
 	push r1
 
@@ -150,15 +150,6 @@ zeros
 	st0 (current_location),r1 ;Store the address of the ringbuffer in ram0
 	ret
 
-;; -----------------------------------------------------------------
-;; This for reading the coeffcients and wrting it to the file
-;; -----------------------------------------------------------------
-
-	;; set r1,coefficients
-	;; nop
-	;; st0 (current_location),r1
-	;; ret
-
 ;;; ----------------------------------------------------------------------
 ;;; This is the filter kernel. It assumes that the following registers
 ;;; can be changed: r0, r1, ar0, ar1, step0, step1, bot1, top1, acr0,
@@ -211,37 +202,12 @@ convo
 	convss acr0,(ar0++%),(ar1++%)
 	nop
 	nop
-	move r0,sat rnd acr0
+	move r0,sat div4 rnd acr0
 	nop
 	st0 (current_location),r10 ;store the address to "current_location" in ram0
 	clr acr0
 	out 0x11,r0
 	ret
-
-;; -----------------------------------------------------------------
-;; This is the reading the coeffcients and wrting it to the file.
-;; -----------------------------------------------------------------
-
-	;; set bot0,coefficients               ;and the bottom0 register for coefficients.
-        ;; nop
-        ;; move r10,bot0
-        ;; nop
-	;; add r0,r10,31
-	;; set step0,1
-        ;; move top0,r0 	                 ;set the top1
-
-	;; ld0 r10,(current_location) ;Save the address of the coefficients
-	;; nop
-	;; move ar0,r10
-	;; nop
-	;; ld0 r0,(ar0++%)
-	;; nop
-	;; out 0x11,r0
-	;; move r10,ar0
-	;; nop
-	;; st0 (current_location),r10
-	;; ret
-	
 
 ;;; ----------------------------------------------------------------------
 ;;; Allocate space for ringbuffer. We put this in DM1 since the
@@ -303,7 +269,41 @@ coefficients
 	.dw 0x01f7
 	.dw 0x00fc
 	.dw 0x0074
-	
+
+	;; .scale 16.0
+	;; .df 0.0004		;
+	;; .df 0.0010		; Enter hexadecimal number like this
+	;; .df 0.0019
+	;; .df 0.0036
+	;; .df 0.0063
+	;; .df 0.0102
+	;; .df 0.0153
+	;; .df 0.0217
+	;; .df 0.0291
+	;; .df 0.0373
+	;; .df 0.0457
+	;; .df 0.0538
+	;; .df 0.0612
+	;; .df 0.0672
+	;; .df 0.0715
+	;; .df 0.0738
+	;; .df 0.0738
+	;; .df 0.0715
+	;; .df 0.0672
+	;; .df 0.0612
+	;; .df 0.0538
+	;; .df 0.0457
+	;; .df 0.0373
+	;; .df 0.0291
+	;; .df 0.0217
+	;; .df 0.0153
+	;; .df 0.0102
+	;; .df 0.0063
+	;; .df 0.0036
+	;; .df 0.0019
+	;; .df 0.0010
+	;; .df 0.0004
+
 ;;; ----------------------------------------------------------------------
 ;;; Stack space
 ;;; ----------------------------------------------------------------------
