@@ -14,8 +14,8 @@ help:
 	@echo "Read the lab manual"
 
 clean:
-	make -C decoder clean
-	make -C util clean
+	# make -C decoder clean
+	# make -C util clean
 	rm -rf work
 
 work:

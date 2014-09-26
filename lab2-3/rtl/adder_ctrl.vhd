@@ -12,8 +12,32 @@ end adder_ctrl;
 architecture adder_ctrl_rtl of adder_ctrl is
 begin  -- adder_ctrl_rtl
 
-  -- Remove the following lines and put your code here
-  mx_opa_inv_o <= '0';
-  mx_ci_o <= "00";
-
+adder_logic:process(function_i,opa_sign_i)
+  begin
+   --ADD instruction
+    I1: if(function_i= "000") then
+      mx_opa_inv_o <= '0';
+      mx_ci_o <= "00";
+--ADDC instructionruction
+      elsif(function_i = "001") then
+        mx_opa_inv_o <= '0';
+        mx_ci_o <= "10";
+--SUB instruction
+      elsif(function_i= "010") then
+        mx_opa_inv_o <= '1';
+        mx_ci_o <= "10";
+--abs instruction
+        elsif(function_i= "100") then
+          if(opa_sign_i = '0') then
+            mx_opa_inv_o <= '0';
+            mx_ci_o <= "00";
+          elsif(opa_sign_i= '1') then
+            mx_opa_inv_o <= '1';
+            mx_ci_o <= "01";
+          end if;
+        end if I1;        
+---- remove the following lines and put your code here
+  --mx_opa_inv_opa_inv_o <= '0';
+  --mx_ci_o <= "00";
+         end process adder_logic;
 end adder_ctrl_rtl;
