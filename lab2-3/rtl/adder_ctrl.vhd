@@ -25,7 +25,15 @@ adder_logic:process(function_i,opa_sign_i)
 --SUB instruction
       elsif(function_i= "010") then
         mx_opa_inv_o <= '1';
-        mx_ci_o <= "10";
+        mx_ci_o <= "01";
+--SUBC instruction
+        elsif(function_i = "011") then
+          mx_opa_inv_o <= '1';
+          mx_ci_o <= "10";
+--CMP instruction
+          elsif(function_i = "101") then
+            mx_opa_inv_o <= '1';
+            mx_ci_o <= "01";            
 --abs instruction
         elsif(function_i= "100") then
           if(opa_sign_i = '0') then
@@ -35,7 +43,7 @@ adder_logic:process(function_i,opa_sign_i)
             mx_opa_inv_o <= '1';
             mx_ci_o <= "01";
           end if;
-        end if I1;        
+        end if I1;
 ---- remove the following lines and put your code here
   --mx_opa_inv_opa_inv_o <= '0';
   --mx_ci_o <= "00";
