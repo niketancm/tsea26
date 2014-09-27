@@ -14,7 +14,7 @@ begin  -- adder_ctrl_rtl
 
 adder_logic:process(function_i,opa_sign_i)
   begin
-   --ADD instruction
+--ADD instruction
     I1: if(function_i= "000") then
       mx_opa_inv_o <= '0';
       mx_ci_o <= "00";
