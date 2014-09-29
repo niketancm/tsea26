@@ -43,9 +43,15 @@ adder_logic:process(function_i,opa_sign_i)
             mx_opa_inv_o <= '1';
             mx_ci_o <= "01";
           end if;
-        end if I1;
 --MAX instruciton
+        elsif(function_i= "110") then
+          mx_opa_inv_o <= '1';
+          mx_ci_o <= "01";
 --MIN instruciton
+        elsif(function_i= "111") then
+          mx_opa_inv_o <= '1';
+          mx_ci_o <= "01";        
+        end if I1;
 ---- remove the following lines and put your code here
   --mx_opa_inv_opa_inv_o <= '0';
   --mx_ci_o <= "00";
