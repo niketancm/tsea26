@@ -44,6 +44,8 @@ adder_logic:process(function_i,opa_sign_i)
             mx_ci_o <= "01";
           end if;
         end if I1;
+--MAX instruciton
+--MIN instruciton
 ---- remove the following lines and put your code here
   --mx_opa_inv_opa_inv_o <= '0';
   --mx_ci_o <= "00";
