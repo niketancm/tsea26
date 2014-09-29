@@ -4,9 +4,9 @@
 	;; TODO: test the 'add' instruction
 	;; ...
 	;; set r0,10
-	;; set r1,1
+	;; set r1,-4
 	;; nop
-	;; add r0,-4
+	;; add r0,
 	;; out 0x11,r0
 
 	;; TODO: test the 'addc' instruction
@@ -26,12 +26,12 @@
 
 	;; TODO: test the 'abs' instruction
 	;; ...
-	set r0,0xfff0
-	;; set r0,0xfff6
-	set r1,0
-	nop
-	abs r1,r0
-	out 0x11,r1
+	;; set r0,0xfff0
+	;; ;; set r0,0xfff6
+	;; set r1,0
+	;; nop
+	;; abs r1,r0
+	;; out 0x11,r1
 
 	;; TODO: test the 'cmp' instruction
 	;; set	r0,4

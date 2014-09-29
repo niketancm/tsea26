@@ -52,8 +52,5 @@ adder_logic:process(function_i,opa_sign_i)
           mx_opa_inv_o <= '1';
           mx_ci_o <= "01";        
         end if I1;
----- remove the following lines and put your code here
-  --mx_opa_inv_opa_inv_o <= '0';
-  --mx_ci_o <= "00";
-         end process adder_logic;
+      end process adder_logic;
 end adder_ctrl_rtl;
