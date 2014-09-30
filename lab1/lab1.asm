@@ -270,7 +270,7 @@ coefficients
 	.dw 0x00fc
 	.dw 0x0074
 
-	;; .scale 16.0
+	;; .scale 0.125         ;Change the appropriate div in line number 205
 	;; .df 0.0004		;
 	;; .df 0.0010		; Enter hexadecimal number like this
 	;; .df 0.0019

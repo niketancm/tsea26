@@ -34,17 +34,17 @@
 	;; out 0x11,r1
 
 	;; TODO: test the 'cmp' instruction
-	;; set	r0,4
-	;; set	r1,2485
-	;; nop
-	;; nop
-	;; cmp	r0,r1
-	;; nop
-	;; nop
-	;; move	r0,fl0		; read flags register
-	;; nop
-	;; nop
-	;; out	0x11,r0
+	set	r0,4
+	set	r1,2485
+	nop
+	nop
+	cmp	r0,r1
+	nop
+	nop
+	move	r0,fl0		; read flags register
+	nop
+	nop
+	out	0x11,r0
 	;; ...
 
 

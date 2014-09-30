@@ -1,7 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-
                                                                         
 entity saturation is
   port (
@@ -13,11 +12,27 @@ end saturation;
 
 architecture saturation_rtl of saturation is
 begin  -- saturation_rtl
-if(value_i(39 downto 32) /= 8b'00000000)
-  
-end if
   -- Remove the following lines and put your code here
-  value_o <= value_i;
-  did_sat_o <= '0';
-  
+sat_logic:process(do_sat_i)
+  begin
+    L1:if(do_sat_i = '0') then
+      value_o <= value_i;
+      did_sat_o <= '0';
+    else
+      L2:if(value_i(31) = value_i(39)) then
+        value_o <= value_i;
+        did_sat_o <= '0';
+        else                            --Overflow has occured, saturate.
+          L3:if(value_i(31) = '1') then     --Saturate to max -ve value.
+            value_o <= x"8000";
+            did_sat_o <= '1';
+          elsif(value_i(31) = '0') then     --Saturate to Max +ve Value.
+            value_o <= x"7FFF";
+            did_sat_o <= '1';
+        end if L3;
+      end if L2;
+    end if L1;
+end process sat_logic;
+  --value_o <= value_i;
+  --did_sat_o <= '0';
 end saturation_rtl;
