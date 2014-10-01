@@ -34,7 +34,7 @@ adder_logic:process(function_i,opa_sign_i)
           elsif(function_i = "101") then
             mx_opa_inv_o <= '1';
             mx_ci_o <= "01";            
---abs instruction
+--ABS instruction
         elsif(function_i= "100") then
           if(opa_sign_i = '0') then
             mx_opa_inv_o <= '0';

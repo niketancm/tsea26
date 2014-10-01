@@ -1,3 +1,4 @@
+
 # These files are always present
 VERILOG_FILES = rtl/acr_reg.v rtl/addressing_mode_decoder.v rtl/addr_mux.v rtl/agu_rf.v rtl/alu.v rtl/bit_reversal.v rtl/clk_gen.v rtl/combined_agu.v rtl/condition_logic.v rtl/dff.v rtl/dsp_core.v rtl/dsp_system_top.v rtl/fwd_ctrl.v rtl/fwdmux.v rtl/id_decode_logic.v rtl/id_pipeline_logic.v rtl/instruction_decoder.v rtl/io_read.v rtl/io.v rtl/io_write.v rtl/loop_controller.v rtl/mac.v rtl/nop_mux.v rtl/operand_select.v rtl/program_counter.v rtl/register_file.v rtl/reset_gen.v rtl/tb_memories.v rtl/write_back_mux.v rtl/mac_scale.v
 
@@ -15,7 +16,7 @@ help:
 
 clean:
 	# make -C decoder clean
-	# make -C util clean
+	make -C util clean
 	rm -rf work
 
 work:

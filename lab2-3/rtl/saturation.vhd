@@ -13,7 +13,7 @@ end saturation;
 architecture saturation_rtl of saturation is
 begin  -- saturation_rtl
   -- Remove the following lines and put your code here
-sat_logic:process(do_sat_i)
+sat_logic:process(do_sat_i,value_i)
   begin
     L1:if(do_sat_i = '0') then
       value_o <= value_i;
@@ -23,16 +23,14 @@ sat_logic:process(do_sat_i)
         value_o <= value_i;
         did_sat_o <= '0';
         else                            --Overflow has occured, saturate.
-          L3:if(value_i(31) = '1') then     --Saturate to max -ve value.
-            value_o <= x"8000";
+          L3:if(value_i(39) = '1') then     --Saturate to max -ve value.
+            value_o <= x"ff80000000";
             did_sat_o <= '1';
-          elsif(value_i(31) = '0') then     --Saturate to Max +ve Value.
-            value_o <= x"7FFF";
+          elsif(value_i(39) = '0') then     --Saturate to Max +ve Value.
+            value_o <= x"007FFFFFFF";
             did_sat_o <= '1';
         end if L3;
       end if L2;
     end if L1;
 end process sat_logic;
-  --value_o <= value_i;
-  --did_sat_o <= '0';
 end saturation_rtl;
