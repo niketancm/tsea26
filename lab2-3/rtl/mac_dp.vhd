@@ -33,7 +33,8 @@ architecture mac_dp_rtl of mac_dp is
   signal add_pos_overflow1, add_pos_overflow2 : std_logic;
   signal add_neg_overflow1, add_neg_overflow2 : std_logic;
 
-  signal c_dornd, c_doabs : std_logic;
+  signal c_dornd--, c_doabs
+    : std_logic;
   signal c_invopb, c_opbsel : std_logic_vector(1 downto 0);
   signal c_opasel : std_logic_vector(2 downto 0);
   signal tmp, tmp2 : signed(40 downto 0);
@@ -166,27 +167,27 @@ begin  -- behav
   adder_result <= tmp(39 downto 0);
   -----------------------------------------------------------------------------
 
-  -----------------------------------------------------------------------------
-  -- Take the absolute value if necessary
-  absolute: process (c_doabs, adder_result)
-  begin  -- process absolute
-    abs_result <= adder_result;
-    if c_doabs = '1' then
-      if adder_result(39) = '1' then
-        abs_result <= not adder_result + 1;
-      end if;
-    end if;
-  end process absolute;
-  -----------------------------------------------------------------------------
+  -------------------------------------------------------------------------------
+  ---- Take the absolute value if necessary
+  --absolute: process (c_doabs, adder_result)
+  --begin  -- process absolute
+  --  abs_result <= adder_result;
+  --  if c_doabs = '1' then
+  --    if adder_result(39) = '1' then
+  --      abs_result <= not adder_result + 1;
+  --    end if;
+  --  end if;
+  --end process absolute;
+  -------------------------------------------------------------------------------
 
   -----------------------------------------------------------------------------
   -- Round the value if necessary
-  rounding: process (c_dornd, abs_result)
+  rounding: process (c_dornd, adder_result)
   begin  -- process rounding
-    round_result <= abs_result;
+    round_result <= adder_result;
     if c_dornd = '1' then
-      if abs_result(15) = '1' then
-        round_result <= (abs_result(39 downto 16) & X"0000") + 65536;
+      if adder_result(15) = '1' then
+        round_result <= (adder_result(39 downto 16) & X"0000") + 65536;
       end if;
     end if;
   end process rounding;
@@ -195,10 +196,10 @@ begin  -- behav
   -----------------------------------------------------------------------------
   -- Create some overflow flag related signals
   add_pos_overflow1 <= (not adder_opa(39) and not adder_opb(39) and adder_result(39));
-  add_pos_overflow2 <= '1' when ((c_dornd = '1') and (abs_result = x"7fffffffff")) else '0';
+  add_pos_overflow2 <= '1' when ((c_dornd = '1') and (adder_result = x"7fffffffff")) else '0';
   add_pos_overflow <= add_pos_overflow1 or add_pos_overflow2;
   add_neg_overflow1 <= (adder_opa(39) and adder_opb(39) and not adder_result(39));
-  add_neg_overflow2 <= '1' when ((c_doabs = '1') and (adder_result = x"8000000000")) else '0';
+  add_neg_overflow2 <= '1' when ((c_invopb = "01") and (adder_result = x"8000000000")) else '0';
   add_neg_overflow <= add_neg_overflow1 or add_neg_overflow2;
   -----------------------------------------------------------------------------
 
