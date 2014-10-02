@@ -121,6 +121,7 @@ begin  -- behav
   with c_opasel select
     adder_opa <=
     (others => '0') when "000",
+    x"0000010000" when "010",
     mac_operanda    when others;
   -----------------------------------------------------------------------------
 
