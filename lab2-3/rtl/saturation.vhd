@@ -12,7 +12,6 @@ end saturation;
 
 architecture saturation_rtl of saturation is
 begin  -- saturation_rtl
-  -- Remove the following lines and put your code here
 sat_logic:process(do_sat_i,value_i)
   begin
     L1:if(do_sat_i = '0') then
