@@ -144,12 +144,12 @@ begin  -- behav
                   to_scaling     => to_scaling,
                   c_scalefactor  => c_scalefactor);
   -----------------------------------------------------------------------------
-
+  --This is for mux to select either for rounding or just macoperandb 
   -----------------------------------------------------------------------------
   with c_dornd select
   round_result <=
   from_scaling when '0',
-  (from_scaling(39 downto 16) & X"0000") when others;
+  (from_scaling(39 downto 16) & X"0000") when others;  --For rounding
   -----------------------------------------------------------------------------
 
   -----------------------------------------------------------------------------
@@ -158,11 +158,12 @@ begin  -- behav
     adder_cin <=
     '0' when "00",
     '1' when "01",
-    mac_operandb(39) when others;
+    mac_operandb(39) when others;       -- for abs
   --
   with adder_cin select
     adder_opb <=
-    round_result when '0',
+    round_result when '0',              --This is for round_result from the
+                                        --above mux.
     not from_scaling     when others;
   -----------------------------------------------------------------------------
 
@@ -179,6 +180,7 @@ begin  -- behav
   add_pos_overflow2 <= '1' when ((c_dornd = '1') and (adder_result = x"7fffffffff")) else '0';
   add_pos_overflow <= add_pos_overflow1 or add_pos_overflow2;
   add_neg_overflow1 <= (adder_opa(39) and adder_opb(39) and not adder_result(39));
+  --For overflow during abs operation, we check for c_invopb, which should be 01
   add_neg_overflow2 <= '1' when ((c_invopb = "01") and (adder_result = x"8000000000")) else '0';
   add_neg_overflow <= add_neg_overflow1 or add_neg_overflow2;
   -----------------------------------------------------------------------------
