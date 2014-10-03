@@ -27,7 +27,7 @@ architecture mac_dp_rtl of mac_dp is
   signal mul_sig : signed(33 downto 0);
 
   signal adder_opb, adder_opa, to_scaling, adder_result, mul_guarded_reg,
-         abs_result, round_result, from_scaling : signed(39 downto 0);
+          round_result, from_scaling : signed(39 downto 0);
   signal adder_cin : std_logic;
 
   signal add_pos_overflow1, add_pos_overflow2 : std_logic;

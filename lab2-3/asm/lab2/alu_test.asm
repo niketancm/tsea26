@@ -49,13 +49,58 @@
 
 
 	;; TODO: test the 'min' and 'max' instructions
-	;; ...
-	;; max operation test
-	set r0,10
-	set r1,20
+	;; ... only unsigned numbers
+
+	;; Max Operation Test
+	set r0,266
+	set r1,10
 	nop
 	max r2,r0,r1
 	out 0x11,r2
+
+	set r0,10
+	set r1,11
+	nop
+	max r2,r0,r1
+	out 0x11,r2
+
+	set r0,0x7fff
+	set r1,0x0000
+	nop
+	max r2,r0,r1
+	out 0x11,r2
+
+	set r0,0x7fff
+	set r1,0x7fff
+	nop
+	max r2,r0,r1
+	out 0x11,r2
+
+	;;Min Operation Test
+	;; set r0,0x7fff
+	;; set r1,0x7fff
+	;; nop
+	;; min r2,r0,r1
+	;; out 0x11,r2
+
+	;; set r0,266
+	;; set r1,10
+	;; nop
+	;; min r2,r0,r1
+	;; out 0x11,r2
+
+	;; set r0,10
+	;; set r1,11
+	;; nop
+	;; min r2,r0,r1
+	;; out 0x11,r2
+
+	;; set r0,0x7fff
+	;; set r1,0x0000
+	;; nop
+	;; min r2,r0,r1
+	;; out 0x11,r2
+	
 	;; terminate simulation
 	out	0x12,r0
 	nop
