@@ -24,15 +24,30 @@
 	;; ...
 
 
-	;; TODO: test the 'abs' instruction
+	;; TODO: test the 'ABS' instruction
 	;; ...
-	;; set r0,0xfff0
-	;; ;; set r0,0xfff6
-	;; set r1,0
-	;; nop
-	;; abs r1,r0
-	;; out 0x11,r1
 
+	set r0,0x8000		;Largest negative number
+	set r1,0x8001
+	set r2,0x7fff		;Largest positive number
+	set r4,0xffff		;-1
+	set r5,5
+	set r6,0xfffc 		;-4
+	set r3,0
+	nop
+	abs r3,r0
+	out 0x11,r3
+	abs r3,r1
+	out 0x11,r3
+	abs r3,r2
+	out 0x11,r3
+	abs r3,r4
+	out 0x11,r3
+	abs r3,r5
+	out 0x11,r3
+	abs r3,r6
+	out 0x11,r3
+	
 	;; TODO: test the 'cmp' instruction
 	;; set	r0,4
 	;; set	r1,2485
