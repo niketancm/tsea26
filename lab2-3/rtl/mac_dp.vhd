@@ -77,7 +77,7 @@ begin  -- behav
 	when "1000" => c_dornd <= '0'; c_invopb <= "01"; c_opasel <= "001"; c_opbsel <= "10"; --c_doabs <= '0'; -- MDM
 	-----------------------------------------------------------------------------------------------------
 	when "1001" => c_dornd <= '0'; c_invopb <= "00"; c_opasel <= "000"; c_opbsel <= "01"; --c_doabs <= '0'; -- MOVE
-	when "1010" => c_dornd <= '1'; c_invopb <= "00"; c_opasel <= "000"; c_opbsel <= "01"; --c_doabs <= '0'; -- MOVE_ROUND
+	when "1010" => c_dornd <= '1'; c_invopb <= "00"; c_opasel <= "010"; c_opbsel <= "01"; --c_doabs <= '0'; -- MOVE_ROUND
 	-----------------------------------------------------------------------------------------------------
 	when others => c_dornd <= '0'; c_invopb <= "00"; c_opasel <= "000"; c_opbsel <= "00"; --c_doabs <= '0'; -- NOP
 	-----------------------------------------------------------------------------------------------------
@@ -121,11 +121,11 @@ begin  -- behav
   with c_opasel select
     adder_opa <=
     (others => '0') when "000",
-    x"0000010000" when "010",
+    x"0000010000" when "010",           --for rounding we add 65536, which is
+                                        --10000 in hex
     mac_operanda    when others;
   -----------------------------------------------------------------------------
 
-  
   -----------------------------------------------------------------------------
   -- Create OpB temporary value before scaling
   with c_opbsel select
@@ -145,8 +145,13 @@ begin  -- behav
                   c_scalefactor  => c_scalefactor);
   -----------------------------------------------------------------------------
 
+  -----------------------------------------------------------------------------
+  with c_dornd select
+  round_result <=
+  from_scaling when '0',
+  (from_scaling(39 downto 16) & X"0000") when others;
+  -----------------------------------------------------------------------------
 
-  
   -----------------------------------------------------------------------------
   -- Invert OpB if necessary
   with c_invopb select
@@ -157,7 +162,7 @@ begin  -- behav
   --
   with adder_cin select
     adder_opb <=
-    from_scaling when '0',
+    round_result when '0',
     not from_scaling     when others;
   -----------------------------------------------------------------------------
 
@@ -181,18 +186,18 @@ begin  -- behav
   --end process absolute;
   -------------------------------------------------------------------------------
 
-  -----------------------------------------------------------------------------
-  -- Round the value if necessary
-  rounding: process (c_dornd, adder_result)
-  begin  -- process rounding
-    round_result <= adder_result;
-    if c_dornd = '1' then
-      if adder_result(15) = '1' then
-        round_result <= (adder_result(39 downto 16) & X"0000") + 65536;
-      end if;
-    end if;
-  end process rounding;
-  -----------------------------------------------------------------------------
+  -------------------------------------------------------------------------------
+  ---- Round the value if necessary
+  --rounding: process (c_dornd, adder_result)
+  --begin  -- process rounding
+  --  round_result <= adder_result;
+  --  if c_dornd = '1' then
+  --    if adder_result(15) = '1' then
+  --      round_result <= (adder_result(39 downto 16) & X"0000") + 65536;
+  --    end if;
+  --  end if;
+  --end process rounding;
+  -------------------------------------------------------------------------------
 
   -----------------------------------------------------------------------------
   -- Create some overflow flag related signals
