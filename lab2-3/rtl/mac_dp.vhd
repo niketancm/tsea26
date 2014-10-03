@@ -173,32 +173,6 @@ begin  -- behav
   adder_result <= tmp(39 downto 0);
   -----------------------------------------------------------------------------
 
-  -------------------------------------------------------------------------------
-  ---- Take the absolute value if necessary
-  --absolute: process (c_doabs, adder_result)
-  --begin  -- process absolute
-  --  abs_result <= adder_result;
-  --  if c_doabs = '1' then
-  --    if adder_result(39) = '1' then
-  --      abs_result <= not adder_result + 1;
-  --    end if;
-  --  end if;
-  --end process absolute;
-  -------------------------------------------------------------------------------
-
-  -------------------------------------------------------------------------------
-  ---- Round the value if necessary
-  --rounding: process (c_dornd, adder_result)
-  --begin  -- process rounding
-  --  round_result <= adder_result;
-  --  if c_dornd = '1' then
-  --    if adder_result(15) = '1' then
-  --      round_result <= (adder_result(39 downto 16) & X"0000") + 65536;
-  --    end if;
-  --  end if;
-  --end process rounding;
-  -------------------------------------------------------------------------------
-
   -----------------------------------------------------------------------------
   -- Create some overflow flag related signals
   add_pos_overflow1 <= (not adder_opa(39) and not adder_opb(39) and adder_result(39));
