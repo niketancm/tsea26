@@ -20,10 +20,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; These conditions are not working!! -ve + -ve
 	
-	;; set r2,0x8000		;set r2 to largest negative number
-	;; nop
-	;; add r2,0xffff		;add -1 to r2, to cause overflow.
-	;; out 0x11,r2
+	set r2,0x8000		;set r2 to largest negative number
+	nop
+	add r2,0xfff		;add -1 to r2, to cause overflow.
+	out 0x11,r2
 
 	;; set r2,0xfff6		;set r2 to a -2
 	;; nop
