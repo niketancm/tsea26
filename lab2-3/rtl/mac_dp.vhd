@@ -121,7 +121,7 @@ begin  -- behav
   with c_opasel select
     adder_opa <=
     (others => '0') when "000",
-    x"0000010000" when "010",           --for rounding we add 65536, which is
+    x"0000008000" when "010",           --for rounding we add 65536, which is
                                         --10000 in hex
     mac_operanda    when others;
   -----------------------------------------------------------------------------
@@ -146,10 +146,10 @@ begin  -- behav
   -----------------------------------------------------------------------------
   --This is for mux to select either for rounding or just macoperandb 
   -----------------------------------------------------------------------------
-  with c_dornd select
-  round_result <=
-  from_scaling when '0',
-  (from_scaling(39 downto 16) & X"0000") when others;  --For rounding
+  --with c_dornd select
+  --round_result <=
+  --from_scaling when '0',
+  --(from_scaling(39 downto 16) & X"0000") when others;  --For rounding
   -----------------------------------------------------------------------------
 
   -----------------------------------------------------------------------------
@@ -162,7 +162,7 @@ begin  -- behav
   --
   with adder_cin select
     adder_opb <=
-    round_result when '0',              --This is for round_result from the
+    from_scaling when '0',              --This is for round_result from the
                                         --above mux.
     not from_scaling     when others;
   -----------------------------------------------------------------------------
@@ -177,7 +177,8 @@ begin  -- behav
   -----------------------------------------------------------------------------
   -- Create some overflow flag related signals
   add_pos_overflow1 <= (not adder_opa(39) and not adder_opb(39) and adder_result(39));
-  add_pos_overflow2 <= '1' when ((c_dornd = '1') and (adder_result = x"7fffffffff")) else '0';
+  --check overflow for round operation
+  add_pos_overflow2 <= '1' when ((c_opasel = "010") and (adder_result = x"7fffffffff")) else '0';
   add_pos_overflow <= add_pos_overflow1 or add_pos_overflow2;
   add_neg_overflow1 <= (adder_opa(39) and adder_opb(39) and not adder_result(39));
   --For overflow during abs operation, we check for c_invopb, which should be 01

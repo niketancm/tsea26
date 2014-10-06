@@ -18,18 +18,16 @@ sat_logic:process(do_sat_i,value_i)
       value_o <= value_i;
       did_sat_o <= '0';
     else
-      L2:if(value_i(31) = value_i(39)) then
+      L2:if(value_i(38 downto 31) /= "00000000" and value_i(39) = '0') then  --Saturate to Max +ve Value.
+        value_o <= x"007FFFFFFF";
+        did_sat_o <= '1';
+      elsif(value_i(38 downto 31) /= "11111111" and value_i(39) = '1') then      --Saturate to max -ve value.
+        value_o <= x"ff80000000";
+        did_sat_o <= '1';
+      else
         value_o <= value_i;
         did_sat_o <= '0';
-        else                            --Overflow has occured, saturate.
-          L3:if(value_i(39) = '1') then     --Saturate to max -ve value.
-            value_o <= x"ff80000000";
-            did_sat_o <= '1';
-          elsif(value_i(39) = '0') then     --Saturate to Max +ve Value.
-            value_o <= x"007FFFFFFF";
-            did_sat_o <= '1';
-        end if L3;
-      end if L2;
-    end if L1;
+    end if L2;
+  end if L1;
 end process sat_logic;
 end saturation_rtl;
