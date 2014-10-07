@@ -27,12 +27,13 @@ architecture mac_dp_rtl of mac_dp is
   signal mul_sig : signed(33 downto 0);
 
   signal adder_opb, adder_opa, to_scaling, adder_result, mul_guarded_reg,
-          round_result, from_scaling : signed(39 downto 0);
+         abs_result, round_result, from_scaling : signed(39 downto 0);
   signal adder_cin : std_logic;
 
   signal add_pos_overflow1, add_pos_overflow2 : std_logic;
   signal add_neg_overflow1, add_neg_overflow2 : std_logic;
 
+  signal c_dornd    : std_logic;
   signal c_invopb, c_opbsel : std_logic_vector(1 downto 0);
   signal c_opasel : std_logic_vector(2 downto 0);
   signal tmp, tmp2 : signed(40 downto 0);
@@ -79,6 +80,7 @@ begin  -- behav
 	-----------------------------------------------------------------------------------------------------
 	when others => c_invopb <= "00"; c_opasel <= "000"; c_opbsel <= "00"; --c_doabs <= '0'; -- NOP
 	-----------------------------------------------------------------------------------------------------
+
     end case;
   end process ctrl_table;
 
@@ -119,12 +121,11 @@ begin  -- behav
   with c_opasel select
     adder_opa <=
     (others => '0') when "000",
-    mac_operanda    when others;
-    --x"0000008000" when others;  
-  --for rounding we add 65536, which is
-                                        --10000 in hex
+    mac_operanda    when "001",
+    x"0000008000" when others;          --for rounding operation
   -----------------------------------------------------------------------------
 
+  
   -----------------------------------------------------------------------------
   -- Create OpB temporary value before scaling
   with c_opbsel select
@@ -134,7 +135,7 @@ begin  -- behav
     mul_guarded_reg when others;
   -----------------------------------------------------------------------------
 
-  
+
   -----------------------------------------------------------------------------
   -- Scaling stuff
   scaling : mac_scale
@@ -143,13 +144,6 @@ begin  -- behav
                   to_scaling     => to_scaling,
                   c_scalefactor  => c_scalefactor);
   -----------------------------------------------------------------------------
-  --This is for mux to select either for rounding or just macoperandb 
-  -----------------------------------------------------------------------------
-  --with c_dornd select
-  --round_result <=
-  --from_scaling when '0',
-  --(from_scaling(39 downto 16) & X"0000") when others;  --For rounding
-  -----------------------------------------------------------------------------
 
   -----------------------------------------------------------------------------
   -- Invert OpB if necessary
@@ -157,12 +151,11 @@ begin  -- behav
     adder_cin <=
     '0' when "00",
     '1' when "01",
-    mac_operandb(39) when others;  -- for abs
+    mac_operandb(39) when others;       --for abs operation.
   --
   with adder_cin select
     adder_opb <=
-    from_scaling when '0',              --This is for round_result from the
-                                        --above mux.
+    from_scaling when '0',
     not from_scaling     when others;
   -----------------------------------------------------------------------------
 
@@ -176,19 +169,17 @@ begin  -- behav
   -----------------------------------------------------------------------------
   -- Create some overflow flag related signals
   add_pos_overflow1 <= (not adder_opa(39) and not adder_opb(39) and adder_result(39));
-  --check overflow for round operation
-  add_pos_overflow2 <= '1' when ((c_opasel = "010") and (adder_result = x"7fffffffff")) else '0';
+  add_pos_overflow2 <= '1' when ((c_opasel = "010") and (abs_result = x"7fffffffff")) else '0';
   add_pos_overflow <= add_pos_overflow1 or add_pos_overflow2;
   add_neg_overflow1 <= (adder_opa(39) and adder_opb(39) and not adder_result(39));
-  --For overflow during abs operation, we check for c_invopb, which should be 01
-  add_neg_overflow2 <= '1' when ((c_invopb = "01") and (adder_result = x"8000000000")) else '0';
+  add_neg_overflow2 <= '1' when ((c_invopb = "10") and (adder_result = x"8000000000")) else '0';
   add_neg_overflow <= add_neg_overflow1 or add_neg_overflow2;
   -----------------------------------------------------------------------------
 
   -----------------------------------------------------------------------------
   -- Saturation handling is done in a separate module that you need to edit!
   sat_box : saturation port map (
-    value_i   => round_result,
+    value_i   => adder_result,
     do_sat_i  => c_dosat,
     value_o   => mac_result,
     did_sat_o => sat_flag);
