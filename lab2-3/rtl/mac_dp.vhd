@@ -27,14 +27,13 @@ architecture mac_dp_rtl of mac_dp is
   signal mul_sig : signed(33 downto 0);
 
   signal adder_opb, adder_opa, to_scaling, adder_result, mul_guarded_reg,
-          round_result, from_scaling : signed(39 downto 0);
+         abs_result, round_result, from_scaling : signed(39 downto 0);
   signal adder_cin : std_logic;
 
   signal add_pos_overflow1, add_pos_overflow2 : std_logic;
   signal add_neg_overflow1, add_neg_overflow2 : std_logic;
 
-  signal c_dornd--, c_doabs
-    : std_logic;
+  signal c_dornd    : std_logic;
   signal c_invopb, c_opbsel : std_logic_vector(1 downto 0);
   signal c_opasel : std_logic_vector(2 downto 0);
   signal tmp, tmp2 : signed(40 downto 0);
@@ -64,23 +63,29 @@ begin  -- behav
   begin  -- process ctrl_table
     case c_macop is
 	-----------------------------------------------------------------------------------------------------
-	when "0000" => c_dornd <= '0'; c_invopb <= "00"; c_opasel <= "000"; c_opbsel <= "00"; --c_doabs <='0'; -- CLR
-	when "0001" => c_dornd <= '0'; c_invopb <= "00"; c_opasel <= "001"; c_opbsel <= "01"; --c_doabs <= '0'; -- ADD
-	when "0010" => c_dornd <= '0'; c_invopb <= "01"; c_opasel <= "001"; c_opbsel <= "01"; --c_doabs <= '0'; -- SUB
-	when "0011" => c_dornd <= '0'; c_invopb <= "01"; c_opasel <= "001"; c_opbsel <= "01"; --c_doabs <= '0'; -- CMP
-	when "0100" => c_dornd <= '0'; c_invopb <= "01"; c_opasel <= "000"; c_opbsel <= "01"; --c_doabs <= '0'; -- NEG
+	when "0000" => c_invopb <= "00"; c_opasel <= "000"; c_opbsel <= "00";  -- CLR
+	when "0001" => c_invopb <= "00"; c_opasel <= "001"; c_opbsel <= "01";  -- ADD
+	when "0010" => c_invopb <= "01"; c_opasel <= "001"; c_opbsel <= "01";  -- SUB
+	when "0011" => c_invopb <= "01"; c_opasel <= "001"; c_opbsel <= "01";  -- CMP
+	when "0100" => c_invopb <= "01"; c_opasel <= "000"; c_opbsel <= "01";  -- NEG
 	-----------------------------------------------------------------------------------------------------
+<<<<<<< HEAD
 	--We use c_inopb = "10". to select the msb of macoperandb, and add or subract depending upon it is negative or not.
 	when "0101" => c_dornd <= '0'; c_invopb <= "10"; c_opasel <= "000"; c_opbsel <= "01"; --c_doabs <= '1'; -- ABS
+=======
+        --c_invopb = "10", which selects the msb of mac_operandb
+	when "0101" => c_invopb <= "10"; c_opasel <= "000"; c_opbsel <= "01";  -- ABS
+>>>>>>> macdp
  	-----------------------------------------------------------------------------------------------------
-	when "0110" => c_dornd <= '0'; c_invopb <= "00"; c_opasel <= "000"; c_opbsel <= "10"; --c_doabs <= '0'; -- MUL
-	when "0111" => c_dornd <= '0'; c_invopb <= "00"; c_opasel <= "001"; c_opbsel <= "10"; --c_doabs <= '0'; -- MAC
-	when "1000" => c_dornd <= '0'; c_invopb <= "01"; c_opasel <= "001"; c_opbsel <= "10"; --c_doabs <= '0'; -- MDM
+	when "0110" => c_invopb <= "00"; c_opasel <= "000"; c_opbsel <= "10";  -- MUL
+	when "0111" => c_invopb <= "00"; c_opasel <= "001"; c_opbsel <= "10";  -- MAC
+	when "1000" => c_invopb <= "01"; c_opasel <= "001"; c_opbsel <= "10";  -- MDM
 	-----------------------------------------------------------------------------------------------------
-	when "1001" => c_dornd <= '0'; c_invopb <= "00"; c_opasel <= "000"; c_opbsel <= "01"; --c_doabs <= '0'; -- MOVE
-	when "1010" => c_dornd <= '1'; c_invopb <= "00"; c_opasel <= "010"; c_opbsel <= "01"; --c_doabs <= '0'; -- MOVE_ROUND
+	when "1001" => c_invopb <= "00"; c_opasel <= "000"; c_opbsel <= "01";  -- MOVE
+        --This is for the round operation, where we add X"8000" to the mac_operandb
+	when "1010" => c_invopb <= "00"; c_opasel <= "010"; c_opbsel <= "01";  -- MOVE_ROUND
 	-----------------------------------------------------------------------------------------------------
-	when others => c_dornd <= '0'; c_invopb <= "00"; c_opasel <= "000"; c_opbsel <= "00"; --c_doabs <= '0'; -- NOP
+	when others => c_invopb <= "00"; c_opasel <= "000"; c_opbsel <= "00";  -- NOP
 	-----------------------------------------------------------------------------------------------------
     end case;
   end process ctrl_table;
@@ -122,11 +127,11 @@ begin  -- behav
   with c_opasel select
     adder_opa <=
     (others => '0') when "000",
-    x"0000008000" when "010",           --for rounding we add 65536, which is
-                                        --10000 in hex
-    mac_operanda    when others;
+    mac_operanda    when "001",
+    x"0000008000" when others;          --for rounding operation
   -----------------------------------------------------------------------------
 
+  
   -----------------------------------------------------------------------------
   -- Create OpB temporary value before scaling
   with c_opbsel select
@@ -136,7 +141,7 @@ begin  -- behav
     mul_guarded_reg when others;
   -----------------------------------------------------------------------------
 
-  
+
   -----------------------------------------------------------------------------
   -- Scaling stuff
   scaling : mac_scale
@@ -145,13 +150,6 @@ begin  -- behav
                   to_scaling     => to_scaling,
                   c_scalefactor  => c_scalefactor);
   -----------------------------------------------------------------------------
-  --This is for mux to select either for rounding or just macoperandb 
-  -----------------------------------------------------------------------------
-  --with c_dornd select
-  --round_result <=
-  --from_scaling when '0',
-  --(from_scaling(39 downto 16) & X"0000") when others;  --For rounding
-  -----------------------------------------------------------------------------
 
   -----------------------------------------------------------------------------
   -- Invert OpB if necessary
@@ -159,12 +157,12 @@ begin  -- behav
     adder_cin <=
     '0' when "00",
     '1' when "01",
-    mac_operandb(39) when others;       -- for abs
+    mac_operandb(39) when others;       --for abs operation.depending upon the
+                                        --msb we add the number or its 2's complement.
   --
   with adder_cin select
     adder_opb <=
-    from_scaling when '0',              --This is for round_result from the
-                                        --above mux.
+    from_scaling when '0',
     not from_scaling     when others;
   -----------------------------------------------------------------------------
 
@@ -178,19 +176,19 @@ begin  -- behav
   -----------------------------------------------------------------------------
   -- Create some overflow flag related signals
   add_pos_overflow1 <= (not adder_opa(39) and not adder_opb(39) and adder_result(39));
-  --check overflow for round operation
-  add_pos_overflow2 <= '1' when ((c_opasel = "010") and (adder_result = x"7fffffffff")) else '0';
+  --To determine the overflow for the abs operation.
+  add_pos_overflow2 <= '1' when ((c_opasel = "010") and (abs_result = x"7fffffffff")) else '0';
   add_pos_overflow <= add_pos_overflow1 or add_pos_overflow2;
   add_neg_overflow1 <= (adder_opa(39) and adder_opb(39) and not adder_result(39));
-  --For overflow during abs operation, we check for c_invopb, which should be 01
-  add_neg_overflow2 <= '1' when ((c_invopb = "01") and (adder_result = x"8000000000")) else '0';
+  --To determine the overflow for rounding operation.
+  add_neg_overflow2 <= '1' when ((c_invopb = "10") and (adder_result = x"8000000000")) else '0';
   add_neg_overflow <= add_neg_overflow1 or add_neg_overflow2;
   -----------------------------------------------------------------------------
 
   -----------------------------------------------------------------------------
   -- Saturation handling is done in a separate module that you need to edit!
   sat_box : saturation port map (
-    value_i   => round_result,
+    value_i   => adder_result,
     do_sat_i  => c_dosat,
     value_o   => mac_result,
     did_sat_o => sat_flag);
