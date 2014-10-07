@@ -69,13 +69,10 @@ begin  -- behav
 	when "0011" => c_invopb <= "01"; c_opasel <= "001"; c_opbsel <= "01";  -- CMP
 	when "0100" => c_invopb <= "01"; c_opasel <= "000"; c_opbsel <= "01";  -- NEG
 	-----------------------------------------------------------------------------------------------------
-<<<<<<< HEAD
 	--We use c_inopb = "10". to select the msb of macoperandb, and add or subract depending upon it is negative or not.
-	when "0101" => c_dornd <= '0'; c_invopb <= "10"; c_opasel <= "000"; c_opbsel <= "01"; --c_doabs <= '1'; -- ABS
-=======
+	when "0101" => c_invopb <= "10"; c_opasel <= "000"; c_opbsel <= "01"; -- ABS
         --c_invopb = "10", which selects the msb of mac_operandb
 	when "0101" => c_invopb <= "10"; c_opasel <= "000"; c_opbsel <= "01";  -- ABS
->>>>>>> macdp
  	-----------------------------------------------------------------------------------------------------
 	when "0110" => c_invopb <= "00"; c_opasel <= "000"; c_opbsel <= "10";  -- MUL
 	when "0111" => c_invopb <= "00"; c_opasel <= "001"; c_opbsel <= "10";  -- MAC
