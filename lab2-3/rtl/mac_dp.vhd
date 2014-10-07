@@ -63,24 +63,25 @@ begin  -- behav
   begin  -- process ctrl_table
     case c_macop is
 	-----------------------------------------------------------------------------------------------------
-	when "0000" => c_invopb <= "00"; c_opasel <= "000"; c_opbsel <= "00"; --c_doabs <='0'; -- CLR
-	when "0001" => c_invopb <= "00"; c_opasel <= "001"; c_opbsel <= "01"; --c_doabs <= '0'; -- ADD
-	when "0010" => c_invopb <= "01"; c_opasel <= "001"; c_opbsel <= "01"; --c_doabs <= '0'; -- SUB
-	when "0011" => c_invopb <= "01"; c_opasel <= "001"; c_opbsel <= "01"; --c_doabs <= '0'; -- CMP
-	when "0100" => c_invopb <= "01"; c_opasel <= "000"; c_opbsel <= "01"; --c_doabs <= '0'; -- NEG
+	when "0000" => c_invopb <= "00"; c_opasel <= "000"; c_opbsel <= "00";  -- CLR
+	when "0001" => c_invopb <= "00"; c_opasel <= "001"; c_opbsel <= "01";  -- ADD
+	when "0010" => c_invopb <= "01"; c_opasel <= "001"; c_opbsel <= "01";  -- SUB
+	when "0011" => c_invopb <= "01"; c_opasel <= "001"; c_opbsel <= "01";  -- CMP
+	when "0100" => c_invopb <= "01"; c_opasel <= "000"; c_opbsel <= "01";  -- NEG
 	-----------------------------------------------------------------------------------------------------
-	when "0101" => c_invopb <= "10"; c_opasel <= "000"; c_opbsel <= "01"; --c_doabs <= '1'; -- ABS
+        --c_invopb = "10", which selects the msb of mac_operandb
+	when "0101" => c_invopb <= "10"; c_opasel <= "000"; c_opbsel <= "01";  -- ABS
  	-----------------------------------------------------------------------------------------------------
-	when "0110" => c_invopb <= "00"; c_opasel <= "000"; c_opbsel <= "10"; --c_doabs <= '0'; -- MUL
-	when "0111" => c_invopb <= "00"; c_opasel <= "001"; c_opbsel <= "10"; --c_doabs <= '0'; -- MAC
-	when "1000" => c_invopb <= "01"; c_opasel <= "001"; c_opbsel <= "10"; --c_doabs <= '0'; -- MDM
+	when "0110" => c_invopb <= "00"; c_opasel <= "000"; c_opbsel <= "10";  -- MUL
+	when "0111" => c_invopb <= "00"; c_opasel <= "001"; c_opbsel <= "10";  -- MAC
+	when "1000" => c_invopb <= "01"; c_opasel <= "001"; c_opbsel <= "10";  -- MDM
 	-----------------------------------------------------------------------------------------------------
-	when "1001" => c_invopb <= "00"; c_opasel <= "000"; c_opbsel <= "01"; --c_doabs <= '0'; -- MOVE
-	when "1010" => c_invopb <= "00"; c_opasel <= "010"; c_opbsel <= "01"; --c_doabs <= '0'; -- MOVE_ROUND
+	when "1001" => c_invopb <= "00"; c_opasel <= "000"; c_opbsel <= "01";  -- MOVE
+        --This is for the round operation, where we add X"8000" to the mac_operandb
+	when "1010" => c_invopb <= "00"; c_opasel <= "010"; c_opbsel <= "01";  -- MOVE_ROUND
 	-----------------------------------------------------------------------------------------------------
-	when others => c_invopb <= "00"; c_opasel <= "000"; c_opbsel <= "00"; --c_doabs <= '0'; -- NOP
+	when others => c_invopb <= "00"; c_opasel <= "000"; c_opbsel <= "00";  -- NOP
 	-----------------------------------------------------------------------------------------------------
-
     end case;
   end process ctrl_table;
 
@@ -151,7 +152,8 @@ begin  -- behav
     adder_cin <=
     '0' when "00",
     '1' when "01",
-    mac_operandb(39) when others;       --for abs operation.
+    mac_operandb(39) when others;       --for abs operation.depending upon the
+                                        --msb we add the number or its 2's complement.
   --
   with adder_cin select
     adder_opb <=
@@ -169,9 +171,11 @@ begin  -- behav
   -----------------------------------------------------------------------------
   -- Create some overflow flag related signals
   add_pos_overflow1 <= (not adder_opa(39) and not adder_opb(39) and adder_result(39));
+  --To determine the overflow for the abs operation.
   add_pos_overflow2 <= '1' when ((c_opasel = "010") and (abs_result = x"7fffffffff")) else '0';
   add_pos_overflow <= add_pos_overflow1 or add_pos_overflow2;
   add_neg_overflow1 <= (adder_opa(39) and adder_opb(39) and not adder_result(39));
+  --To determine the overflow for rounding operation.
   add_neg_overflow2 <= '1' when ((c_invopb = "10") and (adder_result = x"8000000000")) else '0';
   add_neg_overflow <= add_neg_overflow1 or add_neg_overflow2;
   -----------------------------------------------------------------------------
