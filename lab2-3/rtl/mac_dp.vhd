@@ -33,8 +33,6 @@ architecture mac_dp_rtl of mac_dp is
   signal add_pos_overflow1, add_pos_overflow2 : std_logic;
   signal add_neg_overflow1, add_neg_overflow2 : std_logic;
 
-  signal c_dornd--, c_doabs
-    : std_logic;
   signal c_invopb, c_opbsel : std_logic_vector(1 downto 0);
   signal c_opasel : std_logic_vector(2 downto 0);
   signal tmp, tmp2 : signed(40 downto 0);
@@ -64,22 +62,22 @@ begin  -- behav
   begin  -- process ctrl_table
     case c_macop is
 	-----------------------------------------------------------------------------------------------------
-	when "0000" => c_dornd <= '0'; c_invopb <= "00"; c_opasel <= "000"; c_opbsel <= "00"; --c_doabs <='0'; -- CLR
-	when "0001" => c_dornd <= '0'; c_invopb <= "00"; c_opasel <= "001"; c_opbsel <= "01"; --c_doabs <= '0'; -- ADD
-	when "0010" => c_dornd <= '0'; c_invopb <= "01"; c_opasel <= "001"; c_opbsel <= "01"; --c_doabs <= '0'; -- SUB
-	when "0011" => c_dornd <= '0'; c_invopb <= "01"; c_opasel <= "001"; c_opbsel <= "01"; --c_doabs <= '0'; -- CMP
-	when "0100" => c_dornd <= '0'; c_invopb <= "01"; c_opasel <= "000"; c_opbsel <= "01"; --c_doabs <= '0'; -- NEG
+	when "0000" => c_invopb <= "00"; c_opasel <= "000"; c_opbsel <= "00"; --c_doabs <='0'; -- CLR
+	when "0001" => c_invopb <= "00"; c_opasel <= "001"; c_opbsel <= "01"; --c_doabs <= '0'; -- ADD
+	when "0010" => c_invopb <= "01"; c_opasel <= "001"; c_opbsel <= "01"; --c_doabs <= '0'; -- SUB
+	when "0011" => c_invopb <= "01"; c_opasel <= "001"; c_opbsel <= "01"; --c_doabs <= '0'; -- CMP
+	when "0100" => c_invopb <= "01"; c_opasel <= "000"; c_opbsel <= "01"; --c_doabs <= '0'; -- NEG
 	-----------------------------------------------------------------------------------------------------
-	when "0101" => c_dornd <= '0'; c_invopb <= "10"; c_opasel <= "000"; c_opbsel <= "01"; --c_doabs <= '1'; -- ABS
+	when "0101" => c_invopb <= "10"; c_opasel <= "000"; c_opbsel <= "01"; --c_doabs <= '1'; -- ABS
  	-----------------------------------------------------------------------------------------------------
-	when "0110" => c_dornd <= '0'; c_invopb <= "00"; c_opasel <= "000"; c_opbsel <= "10"; --c_doabs <= '0'; -- MUL
-	when "0111" => c_dornd <= '0'; c_invopb <= "00"; c_opasel <= "001"; c_opbsel <= "10"; --c_doabs <= '0'; -- MAC
-	when "1000" => c_dornd <= '0'; c_invopb <= "01"; c_opasel <= "001"; c_opbsel <= "10"; --c_doabs <= '0'; -- MDM
+	when "0110" => c_invopb <= "00"; c_opasel <= "000"; c_opbsel <= "10"; --c_doabs <= '0'; -- MUL
+	when "0111" => c_invopb <= "00"; c_opasel <= "001"; c_opbsel <= "10"; --c_doabs <= '0'; -- MAC
+	when "1000" => c_invopb <= "01"; c_opasel <= "001"; c_opbsel <= "10"; --c_doabs <= '0'; -- MDM
 	-----------------------------------------------------------------------------------------------------
-	when "1001" => c_dornd <= '0'; c_invopb <= "00"; c_opasel <= "000"; c_opbsel <= "01"; --c_doabs <= '0'; -- MOVE
-	when "1010" => c_dornd <= '1'; c_invopb <= "00"; c_opasel <= "010"; c_opbsel <= "01"; --c_doabs <= '0'; -- MOVE_ROUND
+	when "1001" => c_invopb <= "00"; c_opasel <= "000"; c_opbsel <= "01"; --c_doabs <= '0'; -- MOVE
+	when "1010" => c_invopb <= "00"; c_opasel <= "010"; c_opbsel <= "01"; --c_doabs <= '0'; -- MOVE_ROUND
 	-----------------------------------------------------------------------------------------------------
-	when others => c_dornd <= '0'; c_invopb <= "00"; c_opasel <= "000"; c_opbsel <= "00"; --c_doabs <= '0'; -- NOP
+	when others => c_invopb <= "00"; c_opasel <= "000"; c_opbsel <= "00"; --c_doabs <= '0'; -- NOP
 	-----------------------------------------------------------------------------------------------------
     end case;
   end process ctrl_table;
@@ -121,9 +119,10 @@ begin  -- behav
   with c_opasel select
     adder_opa <=
     (others => '0') when "000",
-    x"0000008000" when "010",           --for rounding we add 65536, which is
-                                        --10000 in hex
     mac_operanda    when others;
+    --x"0000008000" when others;  
+  --for rounding we add 65536, which is
+                                        --10000 in hex
   -----------------------------------------------------------------------------
 
   -----------------------------------------------------------------------------
@@ -158,7 +157,7 @@ begin  -- behav
     adder_cin <=
     '0' when "00",
     '1' when "01",
-    mac_operandb(39) when others;       -- for abs
+    mac_operandb(39) when others;  -- for abs
   --
   with adder_cin select
     adder_opb <=
