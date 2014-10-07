@@ -3,11 +3,11 @@
 	set	r0,0x2345
 	set	r1,0x6789
 	;; negative number as input
-	;; set	r2,0xffff
-	;; set	r3,0x0000
-	;; special case with largest negative number
-	set	r2,0x8000
+	set	r2,0xffff
 	set	r3,0x0000
+	;; special case with largest negative number
+	;; set	r2,0x8000
+	;; set	r3,0x0000
 	;; Load both the number into the accumulator
 	move	acr0.h,r0
 	move	acr0.l,r1

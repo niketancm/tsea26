@@ -71,8 +71,6 @@ begin  -- behav
 	-----------------------------------------------------------------------------------------------------
 	--We use c_inopb = "10". to select the msb of macoperandb, and add or subract depending upon it is negative or not.
 	when "0101" => c_invopb <= "10"; c_opasel <= "000"; c_opbsel <= "01"; -- ABS
-        --c_invopb = "10", which selects the msb of mac_operandb
-	when "0101" => c_invopb <= "10"; c_opasel <= "000"; c_opbsel <= "01";  -- ABS
  	-----------------------------------------------------------------------------------------------------
 	when "0110" => c_invopb <= "00"; c_opasel <= "000"; c_opbsel <= "10";  -- MUL
 	when "0111" => c_invopb <= "00"; c_opasel <= "001"; c_opbsel <= "10";  -- MAC
