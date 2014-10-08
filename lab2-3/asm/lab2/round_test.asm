@@ -1,7 +1,7 @@
 	.code
 	;; Positive number as input
 	set	r0,0x2345
-	set	r1,0x8000
+	set	r1,0x0000
 	;; Load both the number into the accumulator
 	move	acr0.h,r0
 	move	acr0.l,r1

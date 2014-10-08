@@ -33,7 +33,6 @@ architecture mac_dp_rtl of mac_dp is
   signal add_pos_overflow1, add_pos_overflow2 : std_logic;
   signal add_neg_overflow1, add_neg_overflow2 : std_logic;
 
-  signal c_dornd    : std_logic;
   signal c_invopb, c_opbsel : std_logic_vector(1 downto 0);
   signal c_opasel : std_logic_vector(2 downto 0);
   signal tmp, tmp2 : signed(40 downto 0);
