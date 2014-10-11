@@ -149,7 +149,7 @@
 	max r2,r0,r1
 	out 0x11,r2
 
-	set r0,0x7fff
+	set r0,0x7ffe
 	set r1,0x7fff
 	nop
 	max r2,r0,r1
