@@ -66,13 +66,13 @@ begin
       when s0 =>
         case s0_state_sel is
           when "100" =>
-            next_state <= s0; -- What is the next state?
+            next_state <= s4; -- What is the next state?
           when "101" =>
-            next_state <= s0; -- What is the next state?
+            next_state <= s5; -- What is the next state?
           when "110" =>
-            next_state <= s0; -- What is the next state?
+            next_state <= s3; -- What is the next state?
           when "111" =>
-            next_state <= s0; 
+            next_state <= s1; 
           when others =>
             next_state <= s0;
         end case;
@@ -91,17 +91,24 @@ begin
       when s8 =>
         next_state <= s10 ;
       when s9 =>
+        if (ctrl_c2_PFC_RET = '1') then
+          next_state <= s13;
+        else
         next_state <= s0 ; -- What is the next state?
+        end if;
       when s10 =>
-        next_state <= s0 ; -- What is the next state?
+        if (ctrl_c2_PFC_RET = '1') then
+          next_state <= s13;
+          else
+            next_state <= s0 ; -- What is the next state?
+        end if;
       when s13 =>
-        next_state <= s0 ;
+          next_state <= s0 ;
       when others =>
         next_state <= s0;
     end case;
   end process;
 
---  output logic
 
   jump_case_sel <= ctrl_c2_PFC_RET & jump_decision_i;
   
@@ -113,52 +120,96 @@ begin
     pfc_lc_loopn_sel_o<='0';   --Default value
     case  state  is
       when s0 =>
-        -- Your code here
+        if s0_state_sel = "100" then
+          pfc_pc_sel_o<= "000";
+         end if;
       when s1 =>
         -- Empty
       when s3 =>
         -- Empty
       when s4 =>
-        -- Your code here
+        pfc_pc_add_opa_sel_o <= '0';
+        pfc_pc_sel_o<= "000";       
+        pfc_inst_nop_o<='1';
       when s5 =>
-        -- Your code here
+            pfc_pc_add_opa_sel_o <= '0';
+            pfc_pc_sel_o<= "000";      
+            pfc_inst_nop_o<='0';
       when s6 =>
         case  jump_case_sel is
           when "10" | "11" =>
-            -- Your code here
+            pfc_pc_add_opa_sel_o <= '0';
+            pfc_pc_sel_o<= "000";       
+            pfc_inst_nop_o<='0';
           when "01" =>
-            -- Your code here
+            pfc_pc_add_opa_sel_o <= '0';
+            pfc_pc_sel_o<= "011";       
+            pfc_inst_nop_o<='0';
           when "00" =>
-            -- Your code here
+            pfc_pc_add_opa_sel_o <= '0';
+            pfc_pc_sel_o<= "000";       
+            pfc_inst_nop_o<='1';
+
           when others => --Empty
         end case;
       when s7 =>
         case  jump_case_sel is
           when "10" | "11" =>
-            -- Your code here
+            pfc_pc_add_opa_sel_o <= '0';
+            pfc_pc_sel_o<= "000";       
+            pfc_inst_nop_o<='0';
+
           when "01" =>
-            -- Your code here
+            pfc_pc_add_opa_sel_o <= '0';
+            pfc_pc_sel_o<= "011";       
+            pfc_inst_nop_o<='0';
+
           when "00" =>
             -- Empty
           when others => --Empty
         end case;
-      when s8 =>
-        -- Your code here
+      when s8 =>       
         case  jump_case_sel is
           when "10" | "11"=>
-            -- Your code here
+            pfc_pc_add_opa_sel_o <= '0';
+            pfc_pc_sel_o<= "000";       
+            pfc_inst_nop_o<='1';
+
           when "01" =>
-            -- Your code here
+            pfc_pc_add_opa_sel_o <= '0';
+            pfc_pc_sel_o<= "011";       
+            pfc_inst_nop_o<='1';
+
           when "00" =>
-            -- Your code here
+            pfc_pc_add_opa_sel_o <= '0';
+            pfc_pc_sel_o<= "001";       
+            pfc_inst_nop_o<='0';
+
           when others => --Empty
         end case;
       when s9 =>
-        -- Your code here
+        if  ctrl_c3(1)  = '1' then
+          pfc_pc_sel_o<= "110";       
+
+        else
+          pfc_pc_sel_o<= "001";       
+
+        end if;
       when s10 =>
-        -- Your code here
+        if  ctrl_c3(1) = '1' then
+          pfc_pc_add_opa_sel_o <= '0';
+          pfc_pc_sel_o<= "110";       
+          pfc_inst_nop_o<='1';
+        else
+          pfc_pc_add_opa_sel_o <= '0';
+          pfc_pc_sel_o<= "001";       
+          pfc_inst_nop_o<='1';          --nop for the jum calls
+        end if;
+        
       when s13 =>
-        -- Your code here
+          pfc_pc_sel_o<= "001";       
+          pfc_inst_nop_o<='1';
+
       when others =>
     end case;
   end process;
