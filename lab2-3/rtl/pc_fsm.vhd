@@ -182,8 +182,8 @@ begin
 
           when "00" =>
             pfc_pc_add_opa_sel_o <= '0';
-            pfc_pc_sel_o<= "001";       
-            pfc_inst_nop_o<='0';
+            pfc_pc_sel_o<= "000";       
+            pfc_inst_nop_o<='1';
 
           when others => --Empty
         end case;

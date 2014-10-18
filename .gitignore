@@ -11,3 +11,6 @@
 /lab2-3/asm/lab2/IOS0011
 /lab2-3/rtl_synthesis/*
 /lab2-3/asm/lab3/*.in
+/lab4/*.o
+/lab4/sim
+/lab4/profile.txt

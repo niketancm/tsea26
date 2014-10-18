@@ -16,7 +16,7 @@ apa
 	out 0x11,r3
 	out 0x12,r0
 start	
-	set r0,1
+	set r0,0
 	move fl0,r1
 	nop
 	nop
