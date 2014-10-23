@@ -531,11 +531,9 @@ static void insn_pfc(uint32_t insn)
 /* Accelerated instruction group */
 static void insn_accelerated(uint32_t insn)
 {
-	/* int16_t val1,val2; */
-	/* int16_t tmp; */
-	/* uint16_t dest = 0; */
-	uint16_t mem1,mem0;
-	uint16_t result = 0,temp;
+
+	int16_t mem1,mem0;
+	int16_t result = 0,temp;
 	uint16_t R_a = get_opa(insn);
 	/* set_reg(get_dreg(insn),dest,0); */
 
@@ -544,15 +542,20 @@ static void insn_accelerated(uint32_t insn)
 
 	mem1 = mem1_read((R_a+mem_reg_1));
 	mem0 = mem0_read((R_a+mem_reg_0));
+
 	temp = mem0 - mem1;
 	result = abs16(temp);
+
 	temp = sr_read(31)+result;
-	sr_write(sr_read(31),temp);
-	set_reg(get_dreg(insn),sr_read(31),2);
+	sr_write(31,temp);
+
+
+	/* This is for the repeat_sad instruciton */
 	if(sr_read(31) >= sr_read(30))
 	  {
 	    repeat_sad_stop(4);
 	  }
+	set_reg(get_dreg(insn),temp,2);
 }
 
 /* Advances the program counter one step, taking care to honor delay

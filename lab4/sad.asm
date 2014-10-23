@@ -140,25 +140,30 @@ sad_one_block
 
 	set	r3,pixel_offsets 	; Initialize pixel_offsets pointer
 	set	r7,0			; Initialize index counter to 0
+	move	sr30,r5			;set the repeat_sad
 sad_next_iteration
 
-	move	ar3,r3		; Reinitialize pixel_offsets pointer
+	move	ar3,r3		; Reinitialize pixel_offsets pointe
+	set	r4,0	  	; Clear the register used to accumulate data	
+	set 	sr31,0 		;Set the accumaltion register to 0
+	move 	sr30,r5		;set the repeat_sad
 	
-	set	r4,0	  	; Clear the register used to accumulate data
-	
-
-	repeat	sad_kernel_end,16
+	repeat_sad	sad_kernel_end,16
 sad_kernel_start
  	ld0	r0,(ar3++)	; Load displacement in image
 	nop
- 	ld0	r1,(ar0,r0)	; Load pixel in original image
- 	ld1	r2,(ar1,r0)	; Load pixel in new image
- 	nop
+	accel_sad r4,r0
+	nop
+	nop
+	;; nop
+ 	;; ld0	r1,(ar0,r0)	; Load pixel in original image
+ 	;; ld1	r2,(ar1,r0)	; Load pixel in new image
+ 	;; nop
 
- 	sub	r1,r1,r2	; Calculate difference
- 	abs	r1,r1		; Take absolute value
+ 	;; sub	r1,r1,r2	; Calculate difference
+ 	;; abs	r1,r1		; Take absolute value
 
- 	add	r4,r4,r1	; Sum of absolute difference
+ 	;; add	r4,r4,r1	; Sum of absolute difference
 
 sad_kernel_end
 	
