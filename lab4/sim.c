@@ -1,4 +1,4 @@
-/*
+ /*
  * This file contains a simulator for a very simplified version of
  * the Senior DSP processor. Only the instructions necessary for
  * lab 4 are included and some simplifications have been made.
@@ -535,7 +535,6 @@ static void insn_accelerated(uint32_t insn)
 	int16_t mem1,mem0;
 	int16_t result = 0,temp;
 	uint16_t R_a = get_opa(insn);
-	/* set_reg(get_dreg(insn),dest,0); */
 
 	uint16_t mem_reg_0 = sr_read(0);
 	uint16_t mem_reg_1 = sr_read(1);
@@ -549,12 +548,13 @@ static void insn_accelerated(uint32_t insn)
 	temp = sr_read(31)+result;
 	sr_write(31,temp);
 
-
 	/* This is for the repeat_sad instruciton */
 	if(sr_read(31) >= sr_read(30))
 	  {
 	    repeat_sad_stop(4);
 	  }
+
+/* Store the result in the register.  */
 	set_reg(get_dreg(insn),temp,2);
 }
 
